@@ -25,17 +25,26 @@ class Server:
         try:
             server_sock.bind((self._host, self._port))
             server_sock.listen()
+            server_sock.setblocking(False)
 
             while True:
-                client_sock, _ = server_sock.accept()
-                self._queue.put(client_sock)
-                if not self._queue.empty() and threading.active_count() < concurrency_level:
-                    client_sock = self._queue.get()
-                    thr = threading.Thread(target=self.serve_client, args=(client_sock,))
+                try:
+                    client_sock, _ = server_sock.accept()
+                    self._queue.put(client_sock)
+                except BlockingIOError:
+                    pass
+                if not self._queue.empty():
                     try:
-                        thr.start()
+                        if threading.active_count() < concurrency_level:
+                            client_sock = self._queue.get()
+                            thr = threading.Thread(target=self.serve_client, args=(client_sock,))
+                            thr.start()
+                        elif concurrency_level == 1:
+                            client_sock = self._queue.get()
+                            self.serve_client(client_sock)
                     except Exception as e:
                         print('Client serving failed', e)
+
         finally:
             server_sock.close()
 
@@ -51,10 +60,6 @@ class Server:
 
         if client_sock:
             client_sock.close()
-
-        if not self._queue.empty():
-            client_sock = self._queue.get()
-            self.serve_client(client_sock)
 
     def parse_request(self, client_sock):
         rfile = client_sock.makefile('rb')
