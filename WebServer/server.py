@@ -8,11 +8,11 @@ from response import Response
 
 MAX_LINE = 10**5
 
-class MyHTTPServer:
-    def __init__(self, host, port, concurrency_level):
-        self._host = host
-        self._port = port
-        self._concurrency_level = concurrency_level
+class Server:
+    def __init__(self, host_, port_, concurrency_level_):
+        self._host = host_
+        self._port = port_
+        self._concurrency_level = concurrency_level_
         self._queue = Queue()
 
     def serve_forever(self):
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     port = int(sys.argv[2])
     concurrency_level = int(sys.argv[3])
 
-    serv = MyHTTPServer(host, port, concurrency_level)
+    serv = Server(host, port, concurrency_level)
     try:
         serv.serve_forever()
     except KeyboardInterrupt:

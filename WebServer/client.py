@@ -2,12 +2,12 @@ import socket
 import sys
 
 
-def send_query(host, port, filename):
+def send_query(host_, port_, filename_):
     client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    client_sock.connect((host, port))
+    client_sock.connect((host_, port_))
 
-    client_sock.sendall(f'GET /{filename} HTTP/1.1\r\nHost: {host}:{port}'.encode('iso-8859-1'))
+    client_sock.sendall(f'GET /{filename_} HTTP/1.1\r\nHost: {host_}:{port_}'.encode('iso-8859-1'))
     client_sock.shutdown(socket.SHUT_WR)
 
     responses = []
