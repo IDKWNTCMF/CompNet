@@ -13,6 +13,7 @@ class MyHTTPServer:
         self._host = host
         self._port = port
         self._concurrency_level = concurrency_level
+        self._queue = Queue()
 
     def serve_forever(self):
         server_sock = socket.socket(
@@ -24,13 +25,12 @@ class MyHTTPServer:
         try:
             server_sock.bind((self._host, self._port))
             server_sock.listen()
-            q = Queue()
 
             while True:
                 client_sock, _ = server_sock.accept()
-                q.put(client_sock)
-                if not q.empty() and threading.active_count() < concurrency_level:
-                    client_sock = q.get()
+                self._queue.put(client_sock)
+                if not self._queue.empty() and threading.active_count() < concurrency_level:
+                    client_sock = self._queue.get()
                     thr = threading.Thread(target=self.serve_client, args=(client_sock,))
                     try:
                         thr.start()
@@ -51,6 +51,10 @@ class MyHTTPServer:
 
         if client_sock:
             client_sock.close()
+
+        if not self._queue.empty():
+            client_sock = self._queue.get()
+            self.serve_client(client_sock)
 
     def parse_request(self, client_sock):
         rfile = client_sock.makefile('rb')
@@ -85,6 +89,7 @@ class MyHTTPServer:
             response = b'404 Not Found'
             headers = [('Content-Length', len(response))]
             return Response(status, reason, headers, response)
+
     def send_response(self, client_sock, resp):
         wfile = client_sock.makefile('wb')
         status_line = f'HTTP/1.1 {resp.status} {resp.reason}\r\n'
