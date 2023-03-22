@@ -24,7 +24,7 @@ class Server:
 
         try:
             server_sock.bind((self._host, self._port))
-            server_sock.listen(concurrency_level)
+            server_sock.listen(self._concurrency_level)
             server_sock.setblocking(False)
 
             while True:
