@@ -5,10 +5,6 @@ import sys
 
 MAX_LINE = 2048
 
-# Packet format
-# Packet: ...\r\n
-# Flags: ...\r\n
-# Content: ...
 class Server:
     def __init__(self, host_, port_):
         self._host = host_
